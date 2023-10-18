@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/mapping_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="부작용 선택"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="MissingConstraints" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/checkbox8"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="115dp"
+            android:layout_height="53dp"
+            android:layout_marginStart="20dp"
+            android:text="발열"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            app:layout_constraintStart_toEndOf="@id/checkbox7"
+            app:layout_constraintTop_toTopOf="@id/checkbox7"
+            tools:ignore="MissingConstraints" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/checkbox1"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="126dp"
+            android:layout_height="53dp"
+            android:layout_marginStart="20dp"
+            android:text="소화장애"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/mapping_id"
+            tools:ignore="MissingConstraints" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/checkbox2"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="111dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="24dp"
+            android:text="발진"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            app:layout_constraintStart_toEndOf="@id/checkbox1"
+            app:layout_constraintTop_toTopOf="@id/checkbox1"
+            tools:ignore="MissingConstraints" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/checkbox3"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="198dp"
+            android:layout_height="59dp"
+            android:layout_marginStart="20dp"
+            android:text="두통 | 어지러움"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/checkbox1"
+            tools:ignore="MissingConstraints" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/checkbox4"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="106dp"
+            android:layout_height="55dp"
+            android:layout_marginStart="20dp"
+            android:text="이명"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            app:layout_constraintStart_toEndOf="@id/checkbox3"
+            app:layout_constraintTop_toTopOf="@id/checkbox3"
+            tools:ignore="MissingConstraints" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/checkbox5"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="150dp"
+            android:layout_height="55dp"
+            android:layout_marginStart="20dp"
+            android:text="호흡 곤란"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/checkbox3"
+            tools:ignore="MissingConstraints" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/checkbox6"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="136dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="32dp"
+            android:text="붓는 증상"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            app:layout_constraintStart_toEndOf="@id/checkbox5"
+            app:layout_constraintTop_toTopOf="@id/checkbox5"
+            tools:ignore="MissingConstraints" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/checkbox7"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="113dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="20dp"
+            android:text="환각"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/checkbox5"
+            tools:ignore="MissingConstraints" />
+
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="401dp"
+            android:layout_height="51dp"
+            android:layout_marginStart="4dp"
+            android:text="저장"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/checkbox7"
+            app:layout_constraintVertical_bias="0.245"
+            tools:ignore="MissingConstraints" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "221022930944",
+    "firebase_url": "https://bbiyak-12cb5-default-rtdb.firebaseio.com",
+    "project_id": "bbiyak-12cb5",
+    "storage_bucket": "bbiyak-12cb5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:221022930944:android:56f4eb6d2b0315e0ecf0e5",
+        "android_client_info": {
+          "package_name": "com.example.bb1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMTSGDBqLKFcWT74j0k3vI5B_B_JKLxxk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
