@@ -23,5 +23,16 @@
     <color name="checked_chip_color">#4CAF50</color>
     <color name="unchecked_chip_color">#E0E0E0</color>
     <color name="deep_yellow">#EAB600</color>
+    <color name="light_yellow">#f8fcd2</color>
+    <color name="white_gray">#F5F5F5</color>
+
+    <color name="_bg__state_default__icon_on__arrow_on_color">#FFFFFF</color>
+    <color name="_bg__icon_label_ek1_color">#000000</color>
+    <color name="menu_item_color">#636363</color>
+    <color name="menu_item_ek4_color">#282828</color>
+    <color name="menu_item_ek12_color">#774CC7</color>
+    <color name="_bg__state_disabled__icon_on__arrow_on_color">#E6E6E6</color>
+    <color name="menu_item_ek16_color">#9E9E9E</color>
+    <color name="_bg__state_active__icon_on__arrow_on_color">#925FF0</color>
 
 </resources>

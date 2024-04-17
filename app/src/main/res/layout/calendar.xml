@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,39 +9,42 @@
     tools:context=".CalendarActivity">
 
 
-    <com.prolificinteractive.materialcalendarview.MaterialCalendarView
-        android:id="@+id/materialCalendar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:mcv_selectionColor="#d2d2d2"
-        tools:ignore="MissingClass,MissingConstraints"
-        tools:layout_editor_absoluteY="-6dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-    </com.prolificinteractive.materialcalendarview.MaterialCalendarView>
-
-
     <View
-        android:id="@+id/bottom_sheet4"
-        android:layout_width="381dp"
-        android:layout_height="217dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="424dp"
-        android:background="@drawable/main_view"
+        android:id="@+id/divider3"
+        android:layout_width="383dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="496dp"
+        android:background="@color/yellow"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.428"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.prolificinteractive.materialcalendarview.MaterialCalendarView
+        android:id="@+id/materialCalendar"
+        android:layout_width="462dp"
+        android:layout_height="497dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:mcv_dateTextAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:mcv_headerTextAppearance="@style/TextAppearance.AppCompat.Large"
+        app:mcv_selectionColor="#d2d2d2"
+        app:mcv_weekDayTextAppearance="@style/TextAppearance.AppCompat.Body1">
+
+    </com.prolificinteractive.materialcalendarview.MaterialCalendarView>
+
     <TextView
         android:id="@+id/sideeffect"
-        android:layout_width="358dp"
-        android:layout_height="169dp"
+        android:layout_width="360dp"
+        android:layout_height="108dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="440dp"
-        android:text="오늘 복약 일지입니다 "
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:layout_marginTop="524dp"
+        android:text="오늘의 부작용 정보입니다 "
+        android:textColor="@color/black"
+        android:textSize="34sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints" />

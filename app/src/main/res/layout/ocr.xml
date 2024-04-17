@@ -7,66 +7,18 @@
     android:layout_height="match_parent"
     tools:context=".Ocr">
 
-
-    <View
-        android:id="@+id/bottom_sheet4"
-        android:layout_width="402dp"
-        android:layout_height="406dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="4dp"
-        android:background="@drawable/main_view"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="400dp"
-        android:layout_height="388dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:scaleType="fitCenter"
+    <androidx.camera.view.PreviewView
+        android:id="@+id/viewFinder"
+        android:layout_width="409dp"
+        android:layout_height="499dp"
+        app:layout_constraintBottom_toTopOf="@+id/captureButton"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.333"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintVertical_bias="0.012">
 
-    <Button
-        android:id="@+id/uploadButton"
-        android:layout_width="191dp"
-        android:layout_height="52dp"
-        android:layout_marginTop="512dp"
-        android:text="이미지 업로드"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.504"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
-
-    <Button
-        android:id="@+id/mappingButton"
-        android:layout_width="193dp"
-        android:layout_height="52dp"
-        android:layout_marginTop="580dp"
-        android:text="복약기 등록"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
-
-    <Button
-        android:id="@+id/captureButton"
-        android:layout_width="189dp"
-        android:layout_height="54dp"
-        android:layout_marginTop="440dp"
-        android:text="사진 촬영"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
+    </androidx.camera.view.PreviewView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
@@ -74,16 +26,77 @@
         android:layout_height="77dp"
         android:layout_gravity="bottom"
         app:backgroundTint="@color/white"
+        app:itemIconSize="48dp"
         app:labelVisibilityMode="labeled"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:menu="@menu/main_menu_bottom"
-        tools:layout_editor_absoluteY="652dp"
-        tools:ignore="MissingConstraints"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:itemIconSize="48dp" />
+        tools:ignore="MissingConstraints" />
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="409dp"
+        android:layout_height="493dp"
+        android:layout_marginEnd="12dp"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.043"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
 
+    <Button
+        android:id="@+id/mappingButton"
+        android:layout_width="196dp"
+        android:layout_height="62dp"
+        android:layout_marginTop="688dp"
+        android:text="복약기 등록"
+        android:textSize="34sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.525"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/captureButton0"
+        android:layout_width="196dp"
+        android:layout_height="62dp"
+        android:layout_marginTop="508dp"
+        android:text="카메라 켜기"
+        android:textSize="34sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.525"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/captureButton"
+        android:layout_width="196dp"
+        android:layout_height="62dp"
+        android:layout_marginTop="568dp"
+        android:text="사진 촬영"
+        android:textSize="34sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.525"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/uploadButton"
+        android:layout_width="196dp"
+        android:layout_height="62dp"
+        android:layout_marginTop="628dp"
+        android:text="이미지 등록"
+        android:textSize="34sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.525"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

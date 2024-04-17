@@ -1,27 +1,23 @@
 package com.example.bb1;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.example.bb1.EventDecorator;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.prolificinteractive.materialcalendarview.CalendarDay;
-import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.prolificinteractive.materialcalendarview.CalendarDay;
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
-
-import java.util.HashSet;
 
 public class CalendarActivity extends AppCompatActivity {
 
@@ -80,31 +76,31 @@ public class CalendarActivity extends AppCompatActivity {
 
                             // checkbox 값이 true인 경우에 대한 처리
                             if (checkbox1) {
-                                sb.append(" 소화장애, ");
+                                sb.append("소화장애,      ");
                                 hasSideEffect = true; // 부작용이 있는 경우 플래그를 true로 설정
                             }
                             if (checkbox2) {
-                                sb.append("발진, ");
+                                sb.append("발진,      ");
                                 hasSideEffect = true; // 부작용이 있는 경우 플래그를 true로 설정
                             }
                             if (checkbox3) {
-                                sb.append("두통 | 어지러움, ");
+                                sb.append("두통 / 어지러움,      ");
                                 hasSideEffect = true; // 부작용이 있는 경우 플래그를 true로 설정
                             }
                             if (checkbox4) {
-                                sb.append("이명, ");
+                                sb.append("이명,      ");
                                 hasSideEffect = true; // 부작용이 있는 경우 플래그를 true로 설정
                             }
                             if (checkbox5) {
-                                sb.append("호흡곤란, ");
+                                sb.append("호흡곤란,      ");
                                 hasSideEffect = true; // 부작용이 있는 경우 플래그를 true로 설정
                             }
                             if (checkbox6) {
-                                sb.append("붓는 증상, ");
+                                sb.append("붓는 증상,      ");
                                 hasSideEffect = true; // 부작용이 있는 경우 플래그를 true로 설정
                             }
                             if (checkbox7) {
-                                sb.append("환각, ");
+                                sb.append("환각,      ");
                                 hasSideEffect = true; // 부작용이 있는 경우 플래그를 true로 설정
                             }
                             if (checkbox8) {
@@ -124,16 +120,7 @@ public class CalendarActivity extends AppCompatActivity {
                         } else {
                             mappingIdTextView.setText("부작용이 없습니다.");
                         }
-
-                        // 부작용 여부에 따라 날짜 색상 설정
-                        HashSet<CalendarDay> datesWithSideEffect = new HashSet<>();
-                        datesWithSideEffect.add(date);
-                        if (hasSideEffect) {
-                            calendarView.addDecorator(new EventDecorator(Color.BLUE, datesWithSideEffect, getSharedPreferences("MyPrefs", MODE_PRIVATE)));
-                        } else {
-                            calendarView.removeDecorator(new EventDecorator(Color.BLUE, datesWithSideEffect, getSharedPreferences("MyPrefs", MODE_PRIVATE)));
                         }
-                    }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
@@ -142,6 +129,7 @@ public class CalendarActivity extends AppCompatActivity {
                 });
             }
         });
+
 
         // BottomNavigationView의 선택 리스너 설정
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {

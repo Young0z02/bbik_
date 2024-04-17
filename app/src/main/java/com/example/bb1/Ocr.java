@@ -4,20 +4,30 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LifecycleOwner;
+
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -25,21 +35,28 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class Ocr extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
-
-    private static final int CAMERA_REQUEST = 1888;
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
+    private static final String TAG = "Ocr";
     private ImageView imageView;
     private String encodedImage;
+
+    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+    private ImageCapture imageCapture;
+    private PreviewView viewFinder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +65,11 @@ public class Ocr extends AppCompatActivity {
 
         imageView = findViewById(R.id.imageView);
         Button captureButton = findViewById(R.id.captureButton);
+        Button captureButton0 = findViewById(R.id.captureButton0);
         Button uploadButton = findViewById(R.id.uploadButton);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setSelectedItemId(R.id.ocr);
-
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -63,20 +80,34 @@ public class Ocr extends AppCompatActivity {
                         return true;
 
                     case R.id.Calendar:
-                        startActivity(new Intent(Ocr.this, CalendarActivity.class)); // Mapping 액티비티 다시 열기
+                        startActivity(new Intent(Ocr.this, CalendarActivity.class));
                         return true;
 
                     case R.id.ocr:
-                        finish(); // 현재 액티비티 종료
+                        finish();
                         startActivity(new Intent(Ocr.this, Ocr.class));
                         return true;
 
                     case R.id.mypage:
                         startActivity(new Intent(Ocr.this, Mypage.class));
                         return true;
-
                     default:
                         return false;
+                }
+            }
+        });
+
+        viewFinder = findViewById(R.id.viewFinder);
+
+        cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+
+        captureButton0.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (ContextCompat.checkSelfPermission(Ocr.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                    startCamera();
+                } else {
+                    requestCameraPermission();
                 }
             }
         });
@@ -84,7 +115,11 @@ public class Ocr extends AppCompatActivity {
         captureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                requestCameraPermission();
+                if (ContextCompat.checkSelfPermission(Ocr.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                    takePicture();
+                } else {
+                    requestCameraPermission();
+                }
             }
         });
 
@@ -93,18 +128,16 @@ public class Ocr extends AppCompatActivity {
             public void onClick(View v) {
                 if (encodedImage != null) {
                     uploadImageToServer(encodedImage);
-
-                    Intent intent = new Intent(Ocr.this, Mapping.class);
-                    startActivity(intent);
-
+                    imageView.setImageBitmap(null);
+                    encodedImage = null;
                 } else {
                     Toast.makeText(Ocr.this, "먼저 사진을 촬영하세요.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        Button mappingButton = findViewById(R.id.mappingButton);
 
+        Button mappingButton = findViewById(R.id.mappingButton);
         mappingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,65 +147,120 @@ public class Ocr extends AppCompatActivity {
         });
     }
 
-
-    // 카메라 권한 요청 메서드 추가
     private void requestCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST_CODE);
         } else {
-            openCamera();
+            startCamera();
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera();
-            } else {
-                Toast.makeText(this, "카메라 권한이 거부되었습니다.", Toast.LENGTH_SHORT).show();
+    private void startCamera() {
+        cameraProviderFuture.addListener(() -> {
+            try {
+                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                bindCameraUseCases(cameraProvider);
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
             }
+        }, ContextCompat.getMainExecutor(this));
+    }
+
+    private void bindCameraUseCases(ProcessCameraProvider cameraProvider) {
+        imageCapture = new ImageCapture.Builder()
+                .setTargetRotation(Surface.ROTATION_270)
+                .build();
+
+        Preview preview = new Preview.Builder()
+                .setTargetRotation(Surface.ROTATION_90)
+                .build();
+
+        preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
+
+        CameraSelector cameraSelector = new CameraSelector.Builder()
+                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                .build();
+
+        cameraProvider.unbindAll();
+        cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture);
+    }
+
+    private void takePicture() {
+        if (ContextCompat.checkSelfPermission(Ocr.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            if (imageCapture != null) {
+                File photoFile = getOutputFile();
+                ImageCapture.OutputFileOptions outputFileOptions =
+                        new ImageCapture.OutputFileOptions.Builder(photoFile).build();
+
+                imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(this),
+                        new ImageCapture.OnImageSavedCallback() {
+                            @Override
+                            public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                                processCapturedImage(photoFile);
+                            }
+
+                            @Override
+                            public void onError(@NonNull ImageCaptureException exception) {
+                                Log.e(TAG, "Image capture failed: " + exception.getMessage());
+                                Toast.makeText(Ocr.this, "사진 촬영에 실패했습니다.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
+        } else {
+            requestCameraPermission();
         }
     }
 
-    private void openCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(cameraIntent, CAMERA_REQUEST);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
-            imageView.setImageBitmap(photo);
-            encodedImage = encodeImage(photo);
-
-
+    private void processCapturedImage(File photoFile) {
+        if (photoFile != null) {
+            Bitmap bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
+            encodedImage = compressAndResizeImage(bitmap, 800, 600, 80); // 이미지를 압축하고 크기를 조절
+            imageView.setImageBitmap(bitmap);
         }
     }
 
-    private String encodeImage(Bitmap bitmap) {
+    private String compressAndResizeImage(Bitmap image, int maxWidth, int maxHeight, int quality) {
+        Bitmap scaledBitmap;
+        if (image.getWidth() > maxWidth || image.getHeight() > maxHeight) {
+            float aspectRatio = (float) image.getWidth() / (float) image.getHeight(); // Corrected
+            int newWidth = maxWidth;
+            int newHeight = (int) (newWidth / aspectRatio);
+            scaledBitmap = Bitmap.createScaledBitmap(image, newWidth, newHeight, true);
+        } else {
+            scaledBitmap = image;
+        }
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
         byte[] imageBytes = baos.toByteArray();
         return Base64.encodeToString(imageBytes, Base64.DEFAULT);
     }
 
+
+    private File getOutputFile() {
+        File mediaDir = new File(getExternalFilesDir(null), "images");
+        if (!mediaDir.exists()) {
+            if (!mediaDir.mkdirs()) {
+                Log.e(TAG, "Failed to create directory");
+                return null;
+            }
+        }
+        String timeStamp = String.valueOf(System.currentTimeMillis());
+        return new File(mediaDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+    }
+
     private void uploadImageToServer(final String encodedImage) {
-        String serverUrl = "http:/192.168.192.177:3000/processImage";
+        String serverUrl = "http://192.168.158.177:3000/processImage";
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.d("ServerResponse", response); // 로그 추가
+                        Log.d("uploadImageToServer", "Request sent to server");
                         try {
                             JSONObject jsonResponse = new JSONObject(response);
                             String message = jsonResponse.getString("message");
-                            Toast.makeText(Ocr.this, message, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Ocr.this, "이미지 업로드가 완료되었습니다", Toast.LENGTH_SHORT).show();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -181,8 +269,8 @@ public class Ocr extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.e("ServerError", error.toString()); // 로그 추가
-                        Toast.makeText(Ocr.this, "이미지가 업로드 되었습니다.", Toast.LENGTH_SHORT).show();
+                        Log.e("ServerError", error.toString());
+                        Toast.makeText(Ocr.this, "이미지 업로드 실패.", Toast.LENGTH_SHORT).show();
                     }
                 }) {
             @Override
@@ -193,6 +281,25 @@ public class Ocr extends AppCompatActivity {
             }
         };
 
+        int timeoutMilliseconds = 60000;
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(
+                timeoutMilliseconds,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        ));
+
         requestQueue.add(stringRequest);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                takePicture();
+            } else {
+                Toast.makeText(this, "카메라 권한이 거부되었습니다.", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

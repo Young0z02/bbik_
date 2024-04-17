@@ -1,9 +1,11 @@
 package com.example.bb1;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,8 +13,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -26,8 +30,9 @@ import java.util.ArrayList;
 
 public class Mapping extends AppCompatActivity {
 
-    private Button morningButton, lunchButton, dinnerButton;
+    private Button morningButton, lunchButton, lunchButton1, dinnerButton;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,9 +40,6 @@ public class Mapping extends AppCompatActivity {
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setSelectedItemId(R.id.ocr);
-
-        // Firebase에서 부작용 데이터를 읽어오고 텍스트 뷰에 표시 (수정 및 추가)
-        readSideEffectDataFromFirebase();
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -70,6 +72,7 @@ public class Mapping extends AppCompatActivity {
 
         morningButton = findViewById(R.id.morningButton);
         lunchButton = findViewById(R.id.lunchButton);
+        lunchButton1 = findViewById(R.id.lunchButton1);
         dinnerButton = findViewById(R.id.dinnerButton);
 
         morningButton.setOnClickListener(new View.OnClickListener() {
@@ -82,17 +85,28 @@ public class Mapping extends AppCompatActivity {
         lunchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showMedicationDialog("서랍형");
+                showMedicationDialog("서랍형0");
+            }
+        });
+
+        lunchButton1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMedicationDialog("서랍형1");
             }
         });
 
         dinnerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showMedicationDialog("휴대용");
+                showMedicationDialog("약통");
             }
         });
+
+        // 액티비티가 생성될 때 데이터를 설정
+        updateFirebaseData("initial", true, true, true, true);
     }
+
 
     private void showMedicationDialog(String time) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -143,57 +157,57 @@ public class Mapping extends AppCompatActivity {
             selectedItems.add("저녁");
         }
         if (bedtimeChecked) {
-            selectedItems.add("잠자기 전");
+            selectedItems.add("취짐 전");
         }
 
         // 배열을 Firebase에 업데이트
         ref.child("selectedItems").setValue(selectedItems).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(Mapping.this, "복약기 연결 성공", Toast.LENGTH_SHORT).show();
+                Toast.makeText(Mapping.this, "연결 성공", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(Mapping.this, "복약기 연결 실패", Toast.LENGTH_SHORT).show();
+                Toast.makeText(Mapping.this, "연결 실패", Toast.LENGTH_SHORT).show();
             }
         });
-    }
 
-    private void readSideEffectDataFromFirebase() {
-        DatabaseReference sideeffectReference = FirebaseDatabase.getInstance().getReference().child("user").child("sideeffectP");
+        TextView medCalTextView = findViewById(R.id.mapping_id);
 
-        sideeffectReference.addValueEventListener(new ValueEventListener() {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("user/medicine");
+
+        databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    // "내복약," "약통," "서랍형" 경로에서 데이터 가져오기
-                    DataSnapshot 내복약Snapshot = dataSnapshot.child("내복약");
-                    DataSnapshot 약통Snapshot = dataSnapshot.child("휴대용");
-                    DataSnapshot 서랍형Snapshot = dataSnapshot.child("서랍형");
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                StringBuilder allMedicineNames = new StringBuilder();
 
-                    // TextView에 표시할 문자열 초기화
-                    String textToDisplay = "현재 복약 사용 중인 복약기 : \n\n" + "";
+                for (int i = 1; i <= 8; i++) {
+                    String medicineNameKey = "medicineName" + i;
+                    DataSnapshot medicineSnapshot = dataSnapshot.child(medicineNameKey);
 
-                    if (내복약Snapshot.exists()) {
-                        textToDisplay += "내복약 +";
-                    }
-                    if (약통Snapshot.exists()) {
-                        textToDisplay += "휴대용 +";
-                    }
-                    if (서랍형Snapshot.exists()) {
-                        textToDisplay += "서랍형";
-                    }
+                    if (medicineSnapshot.exists()) {
+                        String medicineName = medicineSnapshot.getValue(String.class);
 
-                    // Update TextView
-                    TextView mapping_id = (TextView) findViewById(R.id.mapping_id);
-                    mapping_id.setText(textToDisplay);
+                        if (medicineName != null) {
+                            Log.d("FirebaseData", "Medicine Name " + i + ": " + medicineName);
+                            allMedicineNames.append("Medicine Name ").append(i).append(": ").append(medicineName).append("\n");
+                        } else {
+                            Log.e("FirebaseData", "Medicine Name " + i + " is null");
+                        }
+                    } else {
+                        Log.e("FirebaseData", "Snapshot for Medicine Name " + i + " does not exist");
+                    }
                 }
+
+                // 모든 Medicine Names를 TextView에 설정
+                medCalTextView.setText(allMedicineNames.toString());
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                // 오류 처리
+            public void onCancelled(DatabaseError databaseError) {
+                // 에러 처리
+                Log.e("FirebaseData", "Database Error: " + databaseError.getMessage());
             }
         });
     }

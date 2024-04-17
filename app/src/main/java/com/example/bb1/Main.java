@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -22,6 +22,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.timepicker.MaterialTimePicker;
+import com.google.android.material.timepicker.TimeFormat;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -63,6 +65,7 @@ public class Main extends AppCompatActivity {
         bodyTextView = findViewById(R.id.__p______body_2);
         todayTextView = findViewById(R.id.today);
         bottomSheetDialog = new BottomSheetDialog(this, R.style.RoundCornerBottomSheetDialogTheme);
+        TextView reAlarmTextView = findViewById(R.id.re_alarm);
 
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -84,6 +87,66 @@ public class Main extends AppCompatActivity {
                 showBottomSheet();
             }
 
+        });
+
+        reAlarmTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 알람 재설정 팝업 표시
+                showAlarmResetPopup();
+            }
+        });
+
+        TextView medCalTextView = findViewById(R.id.med_cal);
+
+        medCalTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatabaseReference medInfoReference = FirebaseDatabase.getInstance().getReference("user/medicationP");
+
+                medInfoReference.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        // 데이터를 받아 TextView에 보여줄 문자열을 생성
+                        StringBuilder dataToShow = new StringBuilder();
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            String time = snapshot.child("time").getValue(String.class);
+
+                            String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+
+                            if (currentDate.equals(time)) {
+                                // 만약 현재 날짜가 time과 일치한다면 해당 데이터를 StringBuilder에 추가
+                                String daysC = snapshot.child("daysC").getValue(String.class);
+                                String daysNo = snapshot.child("daysNo").getValue(String.class);
+                                String daysTotal = snapshot.child("daysTotal").getValue(String.class);
+                                String medicationNo = snapshot.child("medicationNo").getValue(String.class);
+                                String medicineNo = snapshot.child("medicineNo").getValue(String.class);
+                                String startD = snapshot.child("startD").getValue(String.class);
+
+                                dataToShow.append("일수: ").append(daysC).append("\n")
+                                        .append("횟수: ").append(daysNo).append("\n")
+                                        .append("총 횟수: ").append(daysTotal).append("\n")
+                                        .append("약 번호: ").append(medicineNo).append("\n")
+                                        .append("시작일: ").append(startD).append("\n");
+                            }
+                        }
+
+                        // AlertDialog를 통해 팝업 창에 데이터 표시
+                        AlertDialog.Builder builder = new AlertDialog.Builder(Main.this);
+                        builder.setTitle("약 정보 확인하기");
+                        builder.setMessage(dataToShow.toString());
+                        builder.setPositiveButton("닫기", null);
+
+                        AlertDialog alertDialog = builder.create();
+                        alertDialog.show();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        // 에러 처리
+                    }
+                });
+            }
         });
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -194,7 +257,7 @@ public class Main extends AppCompatActivity {
                     alarmMorningTextView.setText("아침 : " + dataSnapshot.child("medicationM").getValue(String.class));
                     alarmLunchingTextView.setText("점심 : " + dataSnapshot.child("medicationL").getValue(String.class));
                     alarmDinneringTextView.setText("저녁 : " + dataSnapshot.child("medicationD").getValue(String.class));
-                    alarmSleepingTextView.setText("취침 전: " + dataSnapshot.child("medicationS").getValue(String.class));
+                    alarmSleepingTextView.setText("취침 : " + dataSnapshot.child("medicationS").getValue(String.class));
 
                     setMorningAlarm(dataSnapshot.child("medicationM").getValue(String.class));
                     setLunchAlarm(dataSnapshot.child("medicationL").getValue(String.class));
@@ -342,4 +405,124 @@ public class Main extends AppCompatActivity {
         // 알람 설정
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
     }
+
+
+    private void showAlarmResetPopup() {
+        // 팝업창을 열기 위한 코드
+        BottomSheetDialog alarmResetDialog = new BottomSheetDialog(this);
+        View alarmResetView = getLayoutInflater().inflate(R.layout.alarm_reset_popup, null);
+        alarmResetDialog.setContentView(alarmResetView);
+
+        // Firebase에서 기존 알람 시간을 가져와 TextView에 설정하는 로직
+        TextView morningAlarmTextView = alarmResetView.findViewById(R.id.morning_alarm_reset);
+        TextView lunchAlarmTextView = alarmResetView.findViewById(R.id.lunch_alarm_reset);
+        TextView dinnerAlarmTextView = alarmResetView.findViewById(R.id.dinner_alarm_reset);
+        TextView sleepAlarmTextView = alarmResetView.findViewById(R.id.sleep_alarm_reset);
+
+        morningAlarmTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // MaterialTimePicker를 이용해 아침 알람 설정
+                MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
+                        .setTimeFormat(TimeFormat.CLOCK_24H)
+                        .setHour(0)
+                        .setMinute(0)
+                        .setTitleText("아침 알람 설정")
+                        .build();
+
+
+                timePicker.show(getSupportFragmentManager(), "Timepickerdialog");
+
+                timePicker.addOnPositiveButtonClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // 사용자가 시간을 선택하면 Firebase에 알람 시간 업데이트
+                        int hourOfDay = timePicker.getHour();
+                        int minute = timePicker.getMinute();
+                        String newAlarmTime = String.format(Locale.getDefault(), "%02d:%02d:00", hourOfDay, minute);
+                        DatabaseReference alarmRef = FirebaseDatabase.getInstance().getReference().child("user").child("timing").child("-NfvO2lRttUFdEkQbZGr");
+                        alarmRef.child("medicationM").setValue(newAlarmTime);
+                    }
+                });
+            }
+        });
+
+        lunchAlarmTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
+                        .setTimeFormat(TimeFormat.CLOCK_24H)
+                        .setHour(0)
+                        .setMinute(0)
+                        .setTitleText("점심 알람 설정")
+                        .build();
+
+                timePicker.show(getSupportFragmentManager(), "Timepickerdialog");
+
+                timePicker.addOnPositiveButtonClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int hourOfDay = timePicker.getHour();
+                        int minute = timePicker.getMinute();
+                        String newAlarmTime = String.format(Locale.getDefault(), "%02d:%02d:00", hourOfDay, minute);
+                        DatabaseReference alarmRef = FirebaseDatabase.getInstance().getReference().child("user").child("timing").child("-NfvO2lRttUFdEkQbZGr");
+                        alarmRef.child("medicationL").setValue(newAlarmTime);
+                    }
+                });
+            }
+        });
+
+        dinnerAlarmTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
+                        .setTimeFormat(TimeFormat.CLOCK_24H)
+                        .setHour(0)
+                        .setMinute(0)
+                        .setTitleText("저녁 알람 설정")
+                        .build();
+
+                timePicker.show(getSupportFragmentManager(), "Timepickerdialog");
+
+                timePicker.addOnPositiveButtonClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int hourOfDay = timePicker.getHour();
+                        int minute = timePicker.getMinute();
+                        String newAlarmTime = String.format(Locale.getDefault(), "%02d:%02d:00", hourOfDay, minute);
+                        DatabaseReference alarmRef = FirebaseDatabase.getInstance().getReference().child("user").child("timing").child("-NfvO2lRttUFdEkQbZGr");
+                        alarmRef.child("medicationD").setValue(newAlarmTime);
+                    }
+                });
+            }
+        });
+
+        sleepAlarmTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
+                        .setTimeFormat(TimeFormat.CLOCK_24H)
+                        .setHour(0)
+                        .setMinute(0)
+                        .setTitleText("취침 전 알람 설정")
+                        .build();
+
+                timePicker.show(getSupportFragmentManager(), "Timepickerdialog");
+
+                timePicker.addOnPositiveButtonClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int hourOfDay = timePicker.getHour();
+                        int minute = timePicker.getMinute();
+                        String newAlarmTime = String.format(Locale.getDefault(), "%02d:%02d:00", hourOfDay, minute);
+                        DatabaseReference alarmRef = FirebaseDatabase.getInstance().getReference().child("user").child("timing").child("-NfvO2lRttUFdEkQbZGr");
+                        alarmRef.child("medicationS").setValue(newAlarmTime);
+                    }
+                });
+            }
+        });
+
+        alarmResetDialog.show(); // 알람 재설정 팝업창을 보여줍니다.
+    }
+
 }
